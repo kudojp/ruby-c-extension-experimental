@@ -20,10 +20,18 @@ VALUE rb_print_length(VALUE self, VALUE str) { // the receiver of this method is
   return Qnil;
 }
 
+VALUE rb_print_receiver_length(VALUE self) {
+  if (RB_TYPE_P(self, T_STRING) == 1){
+    return rb_sprintf("String length: %ld", RSTRING_LEN(self));
+  }
+  return Qnil;
+}
+
 void Init_foobar() // This has to be the same the one declared in extconf.rb
 {
   VALUE mod = rb_define_module("RubyGuides");
   rb_define_method(mod, "return_nil", rb_return_nil, 0);
   rb_define_method(mod, "create_hash", rb_create_hash, 0);
   rb_define_method(mod, "print_length", rb_print_length, 1); // define onto the RubyGuides module
+  rb_define_method(rb_cString, "print_length", rb_print_receiver_length, 0); // define onto the String class
 }
