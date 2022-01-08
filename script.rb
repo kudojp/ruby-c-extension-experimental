@@ -1,4 +1,5 @@
 require './foobar'
 
 include RubyGuides
-return_nil
+# return_nil
+puts create_hash
