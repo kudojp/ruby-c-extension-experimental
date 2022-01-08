@@ -5,6 +5,14 @@ VALUE rb_return_nil(){
   return Qnil;
 }
 
+VALUE create_hash() {
+  VALUE hash = rb_hash_new(); // creates a ruby string (=VALUE struct in C ???)
+
+  // set the hash key to value
+  rb_hash_aset(hash, rb_str_new2("test"), INT2FIX(1));
+  return hash;
+}
+
 void Init_foobar() // This has to be the same the one declared in extconf.rb
 {
   VALUE mod = rb_define_module("RubyGuides");
