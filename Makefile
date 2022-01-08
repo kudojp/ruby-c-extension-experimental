@@ -139,15 +139,15 @@ extout_prefix =
 target_prefix = 
 LOCAL_LIBS = 
 LIBS = $(LIBRUBYARG_SHARED)   
-ORIG_SRCS = 
+ORIG_SRCS = foobar.c
 SRCS = $(ORIG_SRCS) 
-OBJS = 
+OBJS = foobar.o
 HDRS = $(srcdir)/extconf.h
 LOCAL_HDRS = 
-TARGET = 
-TARGET_NAME = 
+TARGET = foobar
+TARGET_NAME = foobar
 TARGET_ENTRY = Init_$(TARGET_NAME)
-DLLIB = 
+DLLIB = $(TARGET).bundle
 EXTSTATIC = 
 STATIC_LIB = 
 
@@ -160,10 +160,10 @@ HDRDIR        = $(sitehdrdir)$(target_prefix)
 ARCHHDRDIR    = $(sitearchhdrdir)$(target_prefix)
 TARGET_SO_DIR =
 TARGET_SO     = $(TARGET_SO_DIR)$(DLLIB)
-CLEANLIBS     = $(TARGET_SO).dSYM
+CLEANLIBS     = $(TARGET_SO) $(TARGET_SO).dSYM
 CLEANOBJS     = *.o  *.bak
 
-all:    Makefile
+all:    $(DLLIB)
 static: $(STATIC_LIB)
 .PHONY: all install static install-so install-rb
 .PHONY: clean clean-so clean-static clean-rb
@@ -187,7 +187,10 @@ distclean: clean distclean-so distclean-static distclean-rb-default distclean-rb
 realclean: distclean
 install: install-so install-rb
 
-install-so: Makefile
+install-so: $(DLLIB) $(TIMESTAMP_DIR)/.sitearchdir.time
+	$(INSTALL_PROG) $(DLLIB) $(RUBYARCHDIR)
+clean-static::
+	-$(Q)$(RM) $(STATIC_LIB)
 install-rb: pre-install-rb do-install-rb install-rb-default
 install-rb-default: pre-install-rb-default do-install-rb-default
 pre-install-rb: Makefile
@@ -196,8 +199,70 @@ do-install-rb:
 do-install-rb-default:
 pre-install-rb-default:
 	@$(NULLCMD)
+$(TIMESTAMP_DIR)/.sitearchdir.time:
+	$(Q) $(MAKEDIRS) $(@D) $(RUBYARCHDIR)
+	$(Q) $(TOUCH) $@
 
 site-install: site-install-so site-install-rb
 site-install-so: install-so
 site-install-rb: install-rb
 
+.SUFFIXES: .c .m .cc .mm .cxx .cpp .o .S
+
+.cc.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.cc.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+.mm.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.mm.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+.cxx.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.cxx.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+.cpp.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.cpp.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CXX) $(INCFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+.c.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.c.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+.m.o:
+	$(ECHO) compiling $(<)
+	$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) $(COUTFLAG)$@ -c $(CSRCFLAG)$<
+
+.m.S:
+	$(ECHO) translating $(<)
+	$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
+
+$(TARGET_SO): $(OBJS) Makefile
+	$(ECHO) linking shared-object $(DLLIB)
+	-$(Q)$(RM) $(@)
+	$(Q) $(LDSHARED) -o $@ $(OBJS) $(LIBPATH) $(DLDFLAGS) $(LOCAL_LIBS) $(LIBS)
+	$(Q) $(POSTLINK)
+
+
+
+$(OBJS): $(HDRS) $(ruby_headers)
