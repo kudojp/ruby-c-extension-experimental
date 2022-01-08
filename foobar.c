@@ -13,9 +13,17 @@ VALUE rb_create_hash() {
   return hash;
 }
 
+VALUE rb_print_length(VALUE self, VALUE str) { // the receiver of this method is passed as self.
+  if (RB_TYPE_P(str, T_STRING) == 1){
+    return rb_sprintf("String length: %ld", RSTRING_LEN(str));
+  }
+  return Qnil;
+}
+
 void Init_foobar() // This has to be the same the one declared in extconf.rb
 {
   VALUE mod = rb_define_module("RubyGuides");
   rb_define_method(mod, "return_nil", rb_return_nil, 0);
   rb_define_method(mod, "create_hash", rb_create_hash, 0);
+  rb_define_method(mod, "print_length", rb_print_length, 1); // define onto the RubyGuides module
 }
